@@ -1,0 +1,10 @@
+curl -sO https://static.snyk.io/cli/latest/snyk-linux
+curl -L https://github.com/snyk/snyk-to-html/releases/download/v2.3.6/snyk-to-html-linux > snyk-to-html-linux
+curl -OL https://github.com/snyk-schmidtty/sbom/releases/download/0.4.0/bomber
+chmod +x snyk-linux
+chmod +x snyk-to-html-linux
+chmod +x bomber
+./bomber -v
+./snyk-linux -v
+./snyk-linux auth $SNYK_TOKEN
+./snyk-linux sbom --experimental --format=cyclonedx+json > SBOM_cyclonedx.json || true
