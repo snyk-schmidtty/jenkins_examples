@@ -1,0 +1,13 @@
+curl -OL https://github.com/snyk/snyk-to-html/releases/download/v2.3.6/snyk-to-html-linux
+curl -OL https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.24.2/cyclonedx-linux-x64
+chmod +x snyk-to-html-linux
+chmod +x cyclonedx-linux-x64
+docker run --rm --pull always --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:maven-3-jdk-11 snyk monitor || true
+docker run --rm --pull always --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:maven-3-jdk-11 snyk test --json > results_sca.json || true
+docker run --rm --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:maven-3-jdk-11 snyk code test --json > results_sast.json || true
+curl -X GET "https://api.snyk.io/rest/orgs/a0a943ed-20d0-4bc0-9ceb-414146b6761f/projects/4cb70b2f-6af2-4208-8467-3f98b2701c6e/sbom?version=2022-04-06%7Eexperimental&format=cyclonedx%2Bjson" -H "Accept: application/vnd.api+json" -H "Accept: application/vnd.cyclonedx+json" -H "Authorization: token ${SNYK_TOKEN}" > WebGoat-Legacy_API_cyclonedx.json || true
+curl -X GET "https://api.snyk.io/api/v1/org/a0a943ed-20d0-4bc0-9ceb-414146b6761f/project/4cb70b2f-6af2-4208-8467-3f98b2701c6e" -H "Content-Type: application/json" -H "Authorization: token ${SNYK_TOKEN}" > WebGoat-Legacy_project_api.json || true
+docker run --rm --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:maven-3-jdk-11 snyk sbom --experimental --file=pom.xml --format=cyclonedx+json > WebGoat-Legacy_CLI_cyclonedx.json || true
+./cyclonedx-linux-x64 convert --input-file WebGoat-Legacy_CLI_cyclonedx.json --output-format spdxjson > WebGoat-Legacy_spdx.json || true
+./snyk-to-html-linux -i results_sca.json -o WebGoat-Legacy_sca.html || true
+./snyk-to-html-linux -i results_sast.json -o WebGoat-Legacy_sast.html || true
