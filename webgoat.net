@@ -1,0 +1,9 @@
+docker run --rm --pull always --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:dotnet-2.1 dotnet restore
+curl -OL https://github.com/snyk/snyk-to-html/releases/download/v2.3.6/snyk-to-html-linux
+chmod +x snyk-to-html-linux
+docker run --rm --pull always --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:dotnet-2.1 snyk monitor --file=WebGoat.NET.sln || true
+docker run --rm --pull always --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:dotnet-2.1 snyk test --file=WebGoat.NET.sln --json > results_sca.json || true
+docker run --rm --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:dotnet-2.1 snyk code test --json > results_sast.json || true
+docker run --rm --env SNYK_TOKEN -v "$(pwd):/app" snyk/snyk:dotnet-2.1 snyk sbom --experimental --file=WebGoat.NET.sln --format=cyclonedx+json > WebGoat.net_CLI_cyclonedx.json || true
+./snyk-to-html-linux -i results_sca.json -o WebGoat.net_sca.html || true
+./snyk-to-html-linux -i results_sast.json -o WebGoat.net_sast.html || true
