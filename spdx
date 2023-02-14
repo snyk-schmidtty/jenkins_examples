@@ -1,0 +1,1 @@
+curl -H "Authorization: token <API TOKEN>" "https://api.snyk.io/rest/orgs/<org_id>/projects/<project_id>/sbom?version=2022-12-06~beta&format=spdx2.3%2Bjson"
